@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StockMate | 발주·재고 관리</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="login-screen" id="loginScreen">
+      <section class="login-hero">
+        <div class="brand-lockup">
+          <span>S</span>
+          <strong>StockMate</strong>
+        </div>
+        <p class="eyebrow">Order & Inventory System</p>
+        <h1>매장과 본사를 나누어 관리하는 발주 시스템</h1>
+        <p>
+          매장은 빠르게 발주하고, 관리자는 요청을 승인하며 전체 재고와 통계를
+          확인합니다.
+        </p>
+      </section>
+
+      <section class="login-panel">
+        <p class="eyebrow">Login</p>
+        <h2>서비스 접속</h2>
+        <label>
+          계정
+          <select id="loginName">
+            <option value="성수 매장">성수 매장 · 매장</option>
+            <option value="본사 관리자">본사 관리자 · 관리자</option>
+          </select>
+        </label>
+        <label>
+          비밀번호
+          <input id="loginPassword" type="password" value="1234" />
+        </label>
+        <button id="loginButton" type="button">로그인</button>
+        <p class="login-help">샘플 비밀번호는 1234입니다.</p>
+      </section>
+    </main>
+
+    <main class="app-shell hidden" id="appShell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span>S</span>
+          <strong>StockMate</strong>
+        </div>
+        <div class="role-card" id="roleCard">
+          <span id="roleLabel">매장</span>
+          <strong id="currentUser">성수 매장</strong>
+        </div>
+        <nav class="nav-menu" id="navMenu" aria-label="주요 메뉴"></nav>
+        <button class="logout-button" id="logoutButton" type="button">로그아웃</button>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="workspaceEyebrow">Store Workspace</p>
+            <h1 id="workspaceTitle">매장 업무 화면</h1>
+          </div>
+          <div class="today-pill" id="todayPill"></div>
+        </header>
+
+        <section class="view active" id="dashboard">
+          <div class="section-heading">
+            <h2 id="dashboardTitle">운영 대시보드</h2>
+            <p id="dashboardDesc">오늘 필요한 발주와 부족 재고를 빠르게 확인합니다.</p>
+          </div>
+          <div class="metric-grid">
+            <article class="metric-card">
+              <span>전체 발주</span>
+              <strong id="orderCount">0건</strong>
+            </article>
+            <article class="metric-card">
+              <span>대기 발주</span>
+              <strong id="pendingCount">0건</strong>
+            </article>
+            <article class="metric-card">
+              <span>부족 재고</span>
+              <strong id="lowStockCount">0개</strong>
+            </article>
+            <article class="metric-card">
+              <span>누적 금액</span>
+              <strong id="totalAmount">0원</strong>
+            </article>
+          </div>
+          <div class="dashboard-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>최근 발주</h3>
+                <button class="soft-button" type="button" data-jump="admin">발주 보기</button>
+              </div>
+              <div id="recentOrders" class="order-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-head">
+                <h3>부족 품목</h3>
+                <button class="soft-button" type="button" data-jump="inventory">재고 보기</button>
+              </div>
+              <div id="lowStockList" class="stock-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="order">
+          <div class="section-heading">
+            <h2>발주 신청</h2>
+            <p>필요한 품목을 선택하고 + / - 버튼으로 수량을 빠르게 조절합니다.</p>
+          </div>
+          <section class="panel">
+            <div class="order-tools">
+              <label>
+                매장
+                <select id="orderStore"></select>
+              </label>
+              <label>
+                요청 메모
+                <input id="orderMemo" type="text" placeholder="예: 오전 입고 요청" />
+              </label>
+            </div>
+            <div id="productList" class="product-list"></div>
+            <div class="submit-row">
+              <div>
+                <span>예상 발주 금액</span>
+                <strong id="draftTotal">0원</strong>
+              </div>
+              <button id="submitOrder" type="button">발주 요청</button>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="inventory">
+          <div class="section-heading">
+            <h2 id="inventoryTitle">재고 현황</h2>
+            <p id="inventoryDesc">현재 수량과 안전 재고를 비교합니다.</p>
+          </div>
+          <section class="panel">
+            <div class="order-tools">
+              <label>
+                매장 선택
+                <select id="inventoryStore"></select>
+              </label>
+            </div>
+            <div id="inventoryList" class="stock-list"></div>
+          </section>
+        </section>
+
+        <section class="view" id="admin">
+          <div class="section-heading">
+            <h2 id="adminTitle">발주 관리</h2>
+            <p id="adminDesc">발주 요청 상태를 확인합니다.</p>
+          </div>
+          <section class="panel">
+            <div class="panel-head">
+              <h3 id="adminListTitle">발주 목록</h3>
+              <a class="download-link" href="/api/export/orders.csv">CSV 다운로드</a>
+            </div>
+            <div id="adminOrders" class="order-list"></div>
+          </section>
+        </section>
+
+        <section class="view" id="stats">
+          <div class="section-heading">
+            <h2>관리자 통계</h2>
+            <p>매장별 발주 건수와 금액을 비교해 본사 물량 준비에 활용합니다.</p>
+          </div>
+          <section class="panel">
+            <div id="storeStats" class="stats-list"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
