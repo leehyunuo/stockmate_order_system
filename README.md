@@ -46,3 +46,9 @@ PORT=3001 npm run dev
 
 현재는 `data/db.json` 파일에 데이터를 저장합니다.
 실서비스 단계에서는 PostgreSQL 같은 데이터베이스로 교체하는 것이 좋습니다.
+
+## 배포 메모
+
+- Express 서버 기반이므로 Railway 또는 Render 배포에 적합합니다.
+- 실행 명령어는 `npm start`입니다.
+- 서버는 `process.env.PORT`를 사용하므로 Railway/Render의 자동 포트 할당을 지원합니다.
