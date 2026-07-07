@@ -655,13 +655,49 @@ p {
 }
 
 .history-table .table-row {
-  grid-template-columns: 86px 90px 54px minmax(150px, 1fr);
-  min-width: 430px;
+  grid-template-columns: 96px 100px 58px minmax(170px, 1fr) 110px;
+  min-width: 610px;
 }
 
 .stats-table .table-row {
   grid-template-columns: 96px minmax(140px, 1fr) 70px 100px 110px;
   min-width: 516px;
+}
+
+.payment-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.payment-form {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(130px, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.payment-table .table-row {
+  grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) 130px;
+  min-width: 390px;
+}
+
+.payment-table input {
+  width: 100%;
+  min-height: 36px;
+  background: white;
+}
+
+.payment-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.payment-empty {
+  margin: 0;
 }
 
 .price-table .table-row {
@@ -1157,6 +1193,10 @@ p {
 
   .settlement-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .payment-form {
+    grid-template-columns: 1fr;
   }
 
   .product-list-head {

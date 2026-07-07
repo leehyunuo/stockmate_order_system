@@ -8,7 +8,8 @@ const state = {
   stats: null,
   draft: {},
   adminDetail: 'products',
-  historyDate: '',
+  historyDateFrom: '',
+  historyDateTo: '',
   historyStoreId: '',
   productDateFrom: '',
   productDateTo: '',
@@ -123,6 +124,12 @@ function orderMonthValue(order) {
 
 function monthValueFromDate(dateValue) {
   return String(dateValue || '').slice(0, 7)
+}
+
+function settlementDateValue(settlement) {
+  if (settlement.date) return settlement.date
+  if (settlement.month) return `${settlement.month}-01`
+  return ''
 }
 
 function ensureProductDateRange() {
@@ -595,10 +602,21 @@ function renderAdminDashboard(orders) {
 }
 
 function renderOrderHistorySearch(orders) {
+  if (!state.historyDateFrom || !state.historyDateTo) {
+    const range = currentMonthRange()
+    state.historyDateFrom ||= range.from
+    state.historyDateTo ||= range.to
+  }
+
   const filtered = orders
-    .filter((order) => !state.historyDate || orderDateValue(order) === state.historyDate)
+    .filter((order) => {
+      const date = orderDateValue(order)
+      return date >= state.historyDateFrom && date <= state.historyDateTo
+    })
     .filter((order) => !state.historyStoreId || order.storeId === Number(state.historyStoreId))
     .sort((a, b) => b.id - a.id)
+  const filteredTotal = filtered.reduce((sum, order) => sum + orderSupplyAmount(order), 0)
+  const filteredQuantity = filtered.reduce((sum, order) => sum + approvedQuantity(order), 0)
 
   const storeOptions = state.stores
     .map((store) => `<option value="${store.id}" ${String(store.id) === String(state.historyStoreId) ? 'selected' : ''}>${store.name}</option>`)
@@ -607,8 +625,12 @@ function renderOrderHistorySearch(orders) {
   els.recentOrders.innerHTML = `
     <div class="history-filter">
       <label>
-        날짜
-        <input type="date" value="${state.historyDate}" data-history-date />
+        시작일
+        <input type="date" value="${state.historyDateFrom}" data-history-from />
+      </label>
+      <label>
+        종료일
+        <input type="date" value="${state.historyDateTo}" data-history-to />
       </label>
       <label>
         매장
@@ -626,20 +648,30 @@ function renderOrderHistorySearch(orders) {
               <span>매장</span>
               <span>상태</span>
               <span>품목</span>
+              <span>금액</span>
             </div>
             ${filtered
               .map((order) => {
                 const [label, cls] = orderProgressLabel(order.status)
+                const amount = orderSupplyAmount(order)
                 return `
                   <div class="table-row">
                     <span>${orderDateValue(order) || order.createdAt}</span>
                     <strong>${order.storeName}</strong>
                     <span class="status-text ${cls}">${label}</span>
-                    <span>${order.details.map((item) => `${item.productName} ${item.quantity}${item.unit}`).join(' / ')}</span>
+                    <span>${approvedDetails(order).map((item) => `${item.productName} ${item.quantity}${item.unit}`).join(' / ') || '승인 품목 없음'}</span>
+                    <strong>${money(amount)}</strong>
                   </div>
                 `
               })
               .join('')}
+            <div class="table-row table-total">
+              <strong>합계</strong>
+              <span></span>
+              <span></span>
+              <strong>${filteredQuantity}개</strong>
+              <strong>${money(filteredTotal)}</strong>
+            </div>
           </div>`
         : '<p class="empty">조건에 맞는 발주 내역이 없습니다.</p>'
     }
@@ -813,12 +845,6 @@ function renderAdminOrders() {
       .join('') || '<p class="empty">발주 내역이 없습니다.</p>'
 }
 
-function settlementFor(storeId, month) {
-  return state.settlements.find(
-    (item) => item.storeId === storeId && item.month === month,
-  ) || { storeId, month, paidAmount: 0, memo: '' }
-}
-
 function storeApprovedOrders(storeId) {
   return state.orders.filter((order) => order.storeId === storeId && approvedQuantity(order) > 0)
 }
@@ -830,18 +856,27 @@ function storeAmountBeforeDate(storeId, dateValue) {
 }
 
 function storePaidBeforeDate(storeId, dateValue) {
-  const month = monthValueFromDate(dateValue)
   return state.settlements
-    .filter((item) => item.storeId === storeId && item.month < month)
+    .filter((item) => item.storeId === storeId && settlementDateValue(item) < dateValue)
     .reduce((sum, item) => sum + (Number(item.paidAmount) || 0), 0)
 }
 
 function storePaidInRange(storeId, from, to) {
-  const fromMonth = monthValueFromDate(from)
-  const toMonth = monthValueFromDate(to)
   return state.settlements
-    .filter((item) => item.storeId === storeId && item.month >= fromMonth && item.month <= toMonth)
+    .filter((item) => {
+      const date = settlementDateValue(item)
+      return item.storeId === storeId && date >= from && date <= to
+    })
     .reduce((sum, item) => sum + (Number(item.paidAmount) || 0), 0)
+}
+
+function storePaymentsInRange(storeId, from, to) {
+  return state.settlements
+    .filter((item) => {
+      const date = settlementDateValue(item)
+      return item.storeId === storeId && date >= from && date <= to
+    })
+    .sort((a, b) => settlementDateValue(b).localeCompare(settlementDateValue(a)) || b.id - a.id)
 }
 
 function ensureStatsDateRange() {
@@ -855,7 +890,6 @@ function renderStats() {
   ensureStatsDateRange()
   const from = state.statsDateFrom
   const to = state.statsDateTo
-  const settlementMonth = monthValueFromDate(to) || currentMonthValue()
   const monthOrders = visibleOrders()
     .filter((order) => {
       const date = orderDateValue(order)
@@ -892,9 +926,8 @@ function renderStats() {
           storeAmountBeforeDate(store.id, from) - storePaidBeforeDate(store.id, from),
         )
         const orderAmount = orders.reduce((sum, order) => sum + orderSupplyAmount(order), 0)
-        const settlement = settlementFor(store.id, settlementMonth)
         const paidAmount = storePaidInRange(store.id, from, to)
-        const currentPaidAmount = Number(settlement.paidAmount) || 0
+        const payments = storePaymentsInRange(store.id, from, to)
         const balance = Math.max(0, previousBalance + orderAmount - paidAmount)
 
         return `
@@ -940,11 +973,44 @@ function renderStats() {
             <div class="settlement-grid settlement-grid-bottom">
               <div><span>이전 미수</span><strong>${money(previousBalance)}</strong></div>
               <div><span>기간 주문</span><strong>${money(orderAmount)}</strong></div>
-              <label>
-                입금액(${settlementMonth})
-                <input type="number" min="0" value="${currentPaidAmount}" data-settlement-paid="${store.id}" data-month="${settlementMonth}" />
-              </label>
+              <div><span>기간 입금</span><strong>${money(paidAmount)}</strong></div>
               <div><span>총합계</span><strong>${money(balance)}</strong></div>
+            </div>
+            <div class="payment-panel">
+              <div class="payment-form">
+                <label>
+                  입금일
+                  <input type="date" value="${to}" data-payment-date="${store.id}" />
+                </label>
+                <label>
+                  입금액
+                  <input type="number" min="0" placeholder="0" data-payment-amount="${store.id}" />
+                </label>
+                <button class="mini-button approve" type="button" data-payment-add="${store.id}">추가</button>
+              </div>
+              ${
+                payments.length
+                  ? `<div class="data-table payment-table">
+                      <div class="table-row table-head">
+                        <span>입금일</span>
+                        <span>입금액</span>
+                        <span>처리</span>
+                      </div>
+                      ${payments
+                        .map((payment) => `
+                          <div class="table-row" data-payment-row="${payment.id}">
+                            <input type="date" value="${settlementDateValue(payment)}" data-payment-edit-date="${payment.id}" />
+                            <input type="number" min="0" value="${Number(payment.paidAmount) || 0}" data-payment-edit-amount="${payment.id}" />
+                            <span class="payment-actions">
+                              <button class="mini-button approve" type="button" data-payment-save="${payment.id}">저장</button>
+                              <button class="mini-button reject" type="button" data-payment-delete="${payment.id}">삭제</button>
+                            </span>
+                          </div>
+                        `)
+                        .join('')}
+                    </div>`
+                  : '<p class="empty payment-empty">선택한 기간의 입금 내역이 없습니다.</p>'
+              }
             </div>
           </section>
         `
@@ -1117,9 +1183,22 @@ els.recentOrders.addEventListener('change', (event) => {
     return
   }
 
-  const dateInput = event.target.closest('[data-history-date]')
-  if (dateInput) {
-    state.historyDate = dateInput.value
+  const fromInput = event.target.closest('[data-history-from]')
+  if (fromInput) {
+    state.historyDateFrom = fromInput.value || currentMonthRange().from
+    if (state.historyDateTo && state.historyDateFrom > state.historyDateTo) {
+      state.historyDateTo = state.historyDateFrom
+    }
+    renderDashboard()
+    return
+  }
+
+  const toInput = event.target.closest('[data-history-to]')
+  if (toInput) {
+    state.historyDateTo = toInput.value || currentMonthRange().to
+    if (state.historyDateFrom && state.historyDateTo < state.historyDateFrom) {
+      state.historyDateFrom = state.historyDateTo
+    }
     renderDashboard()
     return
   }
@@ -1219,6 +1298,9 @@ els.storeStats.addEventListener('change', async (event) => {
   const fromInput = event.target.closest('[data-stats-from]')
   if (fromInput) {
     state.statsDateFrom = fromInput.value || currentMonthRange().from
+    if (state.statsDateTo && state.statsDateFrom > state.statsDateTo) {
+      state.statsDateTo = state.statsDateFrom
+    }
     renderStats()
     return
   }
@@ -1226,30 +1308,48 @@ els.storeStats.addEventListener('change', async (event) => {
   const toInput = event.target.closest('[data-stats-to]')
   if (toInput) {
     state.statsDateTo = toInput.value || currentMonthRange().to
+    if (state.statsDateFrom && state.statsDateTo < state.statsDateFrom) {
+      state.statsDateFrom = state.statsDateTo
+    }
     renderStats()
-    return
   }
+})
 
-  const paidInput = event.target.closest('[data-settlement-paid]')
-  const input = paidInput
-  if (!input) return
+els.storeStats.addEventListener('click', async (event) => {
+  const addButton = event.target.closest('[data-payment-add]')
+  const saveButton = event.target.closest('[data-payment-save]')
+  const deleteButton = event.target.closest('[data-payment-delete]')
+  const button = addButton || saveButton || deleteButton
+  if (!button) return
 
-  const storeId = Number(input.dataset.settlementPaid)
-  const month = input.dataset.month
-  const card = input.closest('.settlement-card')
-  const paidAmount = card.querySelector('[data-settlement-paid]').value
+  const card = button.closest('.settlement-card')
 
   try {
-    await api('/api/settlements', {
-      method: 'PATCH',
-      body: JSON.stringify({
-        storeId,
-        month,
-        paidAmount,
-      }),
-    })
+    if (addButton) {
+      const storeId = Number(button.dataset.paymentAdd)
+      const date = card.querySelector(`[data-payment-date="${storeId}"]`).value
+      const paidAmount = card.querySelector(`[data-payment-amount="${storeId}"]`).value
+      await api('/api/settlements', {
+        method: 'POST',
+        body: JSON.stringify({ storeId, date, paidAmount }),
+      })
+    } else if (saveButton) {
+      const id = button.dataset.paymentSave
+      const row = button.closest('[data-payment-row]')
+      const date = row.querySelector(`[data-payment-edit-date="${id}"]`).value
+      const paidAmount = row.querySelector(`[data-payment-edit-amount="${id}"]`).value
+      await api(`/api/settlements/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ date, paidAmount }),
+      })
+    } else if (deleteButton) {
+      await api(`/api/settlements/${button.dataset.paymentDelete}`, {
+        method: 'DELETE',
+      })
+    }
+
     await loadData()
-    showToast('정산 정보가 저장되었습니다.')
+    showToast(deleteButton ? '입금 내역을 삭제했습니다.' : '입금 내역을 저장했습니다.')
   } catch (error) {
     showToast(error.message)
   }

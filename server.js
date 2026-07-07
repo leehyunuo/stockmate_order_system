@@ -203,18 +203,24 @@ function storeAmountBeforeDate(db, storeId, dateValue) {
     .reduce((sum, order) => sum + orderSupplyAmount(order), 0)
 }
 
+function settlementDateValue(settlement) {
+  if (settlement.date) return settlement.date
+  if (settlement.month) return `${settlement.month}-01`
+  return ''
+}
+
 function storePaidBeforeDate(db, storeId, dateValue) {
-  const month = monthValueFromDate(dateValue)
   return (db.settlements || [])
-    .filter((item) => item.storeId === storeId && item.month < month)
+    .filter((item) => item.storeId === storeId && settlementDateValue(item) < dateValue)
     .reduce((sum, item) => sum + (Number(item.paidAmount) || 0), 0)
 }
 
 function storePaidInRange(db, storeId, from, to) {
-  const fromMonth = monthValueFromDate(from)
-  const toMonth = monthValueFromDate(to)
   return (db.settlements || [])
-    .filter((item) => item.storeId === storeId && item.month >= fromMonth && item.month <= toMonth)
+    .filter((item) => {
+      const date = settlementDateValue(item)
+      return item.storeId === storeId && date >= from && date <= to
+    })
     .reduce((sum, item) => sum + (Number(item.paidAmount) || 0), 0)
 }
 
@@ -509,43 +515,93 @@ app.patch('/api/products/:productId/price', (req, res) => {
   })
 })
 
-app.patch('/api/settlements', (req, res) => {
-  const { storeId, month, paidAmount, memo } = req.body
+app.post('/api/settlements', (req, res) => {
+  const { storeId, date, paidAmount } = req.body
 
-  if (!storeId || !/^\d{4}-\d{2}$/.test(String(month))) {
+  if (!storeId || !/^\d{4}-\d{2}-\d{2}$/.test(String(date))) {
     return res.status(400).json({
       success: false,
-      message: '매장과 정산 월 정보가 필요합니다.',
+      message: '매장과 입금 날짜가 필요합니다.',
     })
   }
 
   const db = readDb()
   if (!Array.isArray(db.settlements)) db.settlements = []
 
-  let settlement = db.settlements.find(
-    (item) => item.storeId === Number(storeId) && item.month === month,
-  )
-
-  if (!settlement) {
-    settlement = {
-      id: Date.now(),
-      storeId: Number(storeId),
-      month,
-      paidAmount: 0,
-      memo: '',
-    }
-    db.settlements.push(settlement)
+  const settlement = {
+    id: Date.now(),
+    storeId: Number(storeId),
+    date,
+    paidAmount: Math.max(0, Number(paidAmount) || 0),
   }
 
+  db.settlements.push(settlement)
+  writeDb(db)
+
+  res.json({
+    success: true,
+    message: '입금 내역이 추가되었습니다.',
+    settlement,
+  })
+})
+
+app.patch('/api/settlements/:settlementId', (req, res) => {
+  const settlementId = Number(req.params.settlementId)
+  const { date, paidAmount } = req.body
+
+  const db = readDb()
+  if (!Array.isArray(db.settlements)) db.settlements = []
+
+  const settlement = db.settlements.find((item) => item.id === settlementId)
+
+  if (!settlement) {
+    return res.status(404).json({
+      success: false,
+      message: '입금 내역을 찾을 수 없습니다.',
+    })
+  }
+
+  if (date !== undefined) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) {
+      return res.status(400).json({
+        success: false,
+        message: '올바른 입금 날짜가 필요합니다.',
+      })
+    }
+    settlement.date = date
+    delete settlement.month
+  }
   if (paidAmount !== undefined) settlement.paidAmount = Math.max(0, Number(paidAmount) || 0)
-  if (memo !== undefined) settlement.memo = String(memo || '')
 
   writeDb(db)
 
   res.json({
     success: true,
-    message: '정산 정보가 저장되었습니다.',
+    message: '입금 내역이 수정되었습니다.',
     settlement,
+  })
+})
+
+app.delete('/api/settlements/:settlementId', (req, res) => {
+  const settlementId = Number(req.params.settlementId)
+  const db = readDb()
+  if (!Array.isArray(db.settlements)) db.settlements = []
+
+  const beforeCount = db.settlements.length
+  db.settlements = db.settlements.filter((item) => item.id !== settlementId)
+
+  if (db.settlements.length === beforeCount) {
+    return res.status(404).json({
+      success: false,
+      message: '입금 내역을 찾을 수 없습니다.',
+    })
+  }
+
+  writeDb(db)
+
+  res.json({
+    success: true,
+    message: '입금 내역이 삭제되었습니다.',
   })
 })
 
