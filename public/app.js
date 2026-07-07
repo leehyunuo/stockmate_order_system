@@ -19,6 +19,12 @@ const state = {
 
 const $ = (selector) => document.querySelector(selector)
 const money = (value) => `${Number(value).toLocaleString('ko-KR')}원`
+const signedMoney = (value) => {
+  const number = Number(value) || 0
+  if (number > 0) return `+${money(number)}`
+  if (number < 0) return `-${money(Math.abs(number))}`
+  return money(0)
+}
 
 const navByRole = {
   store: [
@@ -352,6 +358,36 @@ function aggregateStatsRows(orders) {
   })
 }
 
+function aggregateHistoryRows(orders) {
+  const rows = new Map()
+
+  orders.forEach((order) => {
+    const date = orderDateValue(order) || order.createdAt
+    approvedDetails(order).forEach((item) => {
+      const key = `${date}-${order.storeId}-${item.productId}`
+      const current = rows.get(key) || {
+        date,
+        storeName: order.storeName,
+        productId: item.productId,
+        productName: item.productName,
+        unit: item.unit,
+        quantity: 0,
+        amount: 0,
+      }
+
+      current.quantity += item.quantity
+      current.amount += (Number(item.price) || 0) * item.quantity
+      rows.set(key, current)
+    })
+  })
+
+  return [...rows.values()].sort((a, b) => {
+    if (a.date !== b.date) return b.date.localeCompare(a.date)
+    if (a.storeName !== b.storeName) return a.storeName.localeCompare(b.storeName, 'ko')
+    return a.productName.localeCompare(b.productName, 'ko')
+  })
+}
+
 function orderGroupStatus(details) {
   const statuses = details.map((item) => item.status || 'pending')
   if (statuses.every((status) => status === 'approved')) return 'approved'
@@ -615,8 +651,9 @@ function renderOrderHistorySearch(orders) {
     })
     .filter((order) => !state.historyStoreId || order.storeId === Number(state.historyStoreId))
     .sort((a, b) => b.id - a.id)
-  const filteredTotal = filtered.reduce((sum, order) => sum + orderSupplyAmount(order), 0)
-  const filteredQuantity = filtered.reduce((sum, order) => sum + approvedQuantity(order), 0)
+  const historyRows = aggregateHistoryRows(filtered)
+  const filteredTotal = historyRows.reduce((sum, row) => sum + row.amount, 0)
+  const filteredQuantity = historyRows.reduce((sum, row) => sum + row.quantity, 0)
 
   const storeOptions = state.stores
     .map((store) => `<option value="${store.id}" ${String(store.id) === String(state.historyStoreId) ? 'selected' : ''}>${store.name}</option>`)
@@ -641,29 +678,25 @@ function renderOrderHistorySearch(orders) {
       </label>
     </div>
     ${
-      filtered.length
+      historyRows.length
         ? `<div class="data-table history-table">
             <div class="table-row table-head">
               <span>날짜</span>
               <span>매장</span>
-              <span>상태</span>
               <span>품목</span>
+              <span>수량</span>
               <span>금액</span>
             </div>
-            ${filtered
-              .map((order) => {
-                const [label, cls] = orderProgressLabel(order.status)
-                const amount = orderSupplyAmount(order)
-                return `
-                  <div class="table-row">
-                    <span>${orderDateValue(order) || order.createdAt}</span>
-                    <strong>${order.storeName}</strong>
-                    <span class="status-text ${cls}">${label}</span>
-                    <span>${approvedDetails(order).map((item) => `${item.productName} ${item.quantity}${item.unit}`).join(' / ') || '승인 품목 없음'}</span>
-                    <strong>${money(amount)}</strong>
-                  </div>
-                `
-              })
+            ${historyRows
+              .map((row) => `
+                <div class="table-row">
+                  <span>${row.date}</span>
+                  <strong>${row.storeName}</strong>
+                  <span>${row.productName}</span>
+                  <strong>${row.quantity}${row.unit}</strong>
+                  <strong>${money(row.amount)}</strong>
+                </div>
+              `)
               .join('')}
             <div class="table-row table-total">
               <strong>합계</strong>
@@ -903,7 +936,7 @@ function renderStats() {
     0,
   )
   const paidTotal = state.stores.reduce((sum, store) => sum + storePaidInRange(store.id, from, to), 0)
-  const finalTotal = Math.max(0, previousBalanceTotal + monthAmount - paidTotal)
+  const finalTotal = paidTotal - (previousBalanceTotal + monthAmount)
 
   els.storeStats.innerHTML = `
     <div class="history-filter stats-filter">
@@ -928,7 +961,8 @@ function renderStats() {
         const orderAmount = orders.reduce((sum, order) => sum + orderSupplyAmount(order), 0)
         const paidAmount = storePaidInRange(store.id, from, to)
         const payments = storePaymentsInRange(store.id, from, to)
-        const balance = Math.max(0, previousBalance + orderAmount - paidAmount)
+        const balance = paidAmount - (previousBalance + orderAmount)
+        const hasDebt = balance < 0
 
         return `
           <section class="settlement-card">
@@ -937,7 +971,7 @@ function renderStats() {
                 <strong>${store.name}</strong>
                 <span>${orders.length}건 · 주문 ${money(orderAmount)}</span>
               </div>
-              <strong class="${balance ? 'debt-text' : 'paid-text'}">${balance ? `미수 ${money(balance)}` : '정산 완료'}</strong>
+              <strong class="${hasDebt ? 'debt-text' : 'paid-text'}">${hasDebt ? `미수 ${signedMoney(balance)}` : `입금 ${signedMoney(balance)}`}</strong>
             </div>
             ${
               statsRows.length
@@ -974,7 +1008,7 @@ function renderStats() {
               <div><span>이전 미수</span><strong>${money(previousBalance)}</strong></div>
               <div><span>기간 주문</span><strong>${money(orderAmount)}</strong></div>
               <div><span>기간 입금</span><strong>${money(paidAmount)}</strong></div>
-              <div><span>총합계</span><strong>${money(balance)}</strong></div>
+              <div><span>총합계</span><strong>${signedMoney(balance)}</strong></div>
             </div>
             <div class="payment-panel">
               <div class="payment-form">
@@ -1018,7 +1052,7 @@ function renderStats() {
       .join('')}
     <div class="stats-summary stats-summary-bottom">
       <strong>${from} ~ ${to}</strong>
-      <span>미수 ${money(previousBalanceTotal)} · 주문 ${money(monthAmount)} · 입금 ${money(paidTotal)} · 총합계 ${money(finalTotal)}</span>
+      <span>미수 ${money(previousBalanceTotal)} · 주문 ${money(monthAmount)} · 입금 ${money(paidTotal)} · 총합계 ${signedMoney(finalTotal)}</span>
     </div>
   `
 }

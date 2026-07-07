@@ -228,6 +228,13 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString('ko-KR')
 }
 
+function formatSignedNumber(value) {
+  const number = Number(value) || 0
+  if (number > 0) return `+${formatNumber(number)}`
+  if (number < 0) return `-${formatNumber(Math.abs(number))}`
+  return formatNumber(0)
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -668,7 +675,7 @@ app.get('/api/export/settlement.xls', (req, res) => {
     )
     const orderAmount = storeOrders.reduce((sum, order) => sum + orderSupplyAmount(order), 0)
     const paidAmount = storePaidInRange(db, store.id, from, to)
-    const balance = Math.max(0, previousBalance + orderAmount - paidAmount)
+    const balance = paidAmount - (previousBalance + orderAmount)
 
     grandPrevious += previousBalance
     grandOrder += orderAmount
@@ -698,7 +705,7 @@ app.get('/api/export/settlement.xls', (req, res) => {
         <td colspan="3">${escapeHtml(store.name)} 소계</td>
         <td></td>
         <td>이전 미수 ${formatNumber(previousBalance)} / 입금 ${formatNumber(paidAmount)}</td>
-        <td class="num">총합계 ${formatNumber(balance)}</td>
+        <td class="num">총합계 ${formatSignedNumber(balance)}</td>
       </tr>
     `)
   })
@@ -737,7 +744,7 @@ app.get('/api/export/settlement.xls', (req, res) => {
               <td colspan="3">전체 합계</td>
               <td></td>
               <td>미수 ${formatNumber(grandPrevious)} / 기간주문 ${formatNumber(grandOrder)} / 입금 ${formatNumber(grandPaid)}</td>
-              <td class="num">${formatNumber(grandBalance)}</td>
+              <td class="num">${formatSignedNumber(grandBalance)}</td>
             </tr>
           </tbody>
         </table>

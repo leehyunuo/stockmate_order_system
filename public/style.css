@@ -655,7 +655,7 @@ p {
 }
 
 .history-table .table-row {
-  grid-template-columns: 96px 100px 58px minmax(170px, 1fr) 110px;
+  grid-template-columns: 96px 100px minmax(150px, 1fr) 70px 110px;
   min-width: 610px;
 }
 
