@@ -32,155 +32,437 @@
   "products": [
     {
       "id": 1,
-      "name": "원두",
-      "category": "음료",
-      "unit": "kg",
-      "price": 18000
+      "name": "아랫등심",
+      "category": "한우",
+      "unit": "개",
+      "price": 110
     },
     {
       "id": 2,
-      "name": "우유",
-      "category": "음료",
-      "unit": "L",
-      "price": 2800
+      "name": "안심",
+      "category": "한우",
+      "unit": "개",
+      "price": 110
     },
     {
       "id": 3,
-      "name": "바닐라 시럽",
-      "category": "음료",
-      "unit": "병",
-      "price": 9500
+      "name": "채끝",
+      "category": "한우",
+      "unit": "개",
+      "price": 123210
     },
     {
       "id": 4,
-      "name": "테이크아웃 컵",
-      "category": "소모품",
-      "unit": "box",
-      "price": 22000
+      "name": "앞다리",
+      "category": "한우",
+      "unit": "개",
+      "price": 3230
     },
     {
       "id": 5,
-      "name": "포장 봉투",
-      "category": "소모품",
-      "unit": "pack",
-      "price": 12000
+      "name": "양지",
+      "category": "한우",
+      "unit": "개",
+      "price": 2320
     },
     {
       "id": 6,
-      "name": "밀가루",
-      "category": "식자재",
-      "unit": "kg",
-      "price": 3400
-    }
-  ],
-  "inventory": [
-    {
-      "id": 1,
-      "storeId": 1,
-      "productId": 1,
-      "quantity": 7,
-      "safetyStock": 10
-    },
-    {
-      "id": 2,
-      "storeId": 1,
-      "productId": 2,
-      "quantity": 18,
-      "safetyStock": 16
-    },
-    {
-      "id": 3,
-      "storeId": 1,
-      "productId": 3,
-      "quantity": 3,
-      "safetyStock": 5
-    },
-    {
-      "id": 4,
-      "storeId": 1,
-      "productId": 4,
-      "quantity": 4,
-      "safetyStock": 8
-    },
-    {
-      "id": 5,
-      "storeId": 1,
-      "productId": 5,
-      "quantity": 9,
-      "safetyStock": 7
-    },
-    {
-      "id": 6,
-      "storeId": 1,
-      "productId": 6,
-      "quantity": 12,
-      "safetyStock": 9
+      "name": "차돌박이",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
     },
     {
       "id": 7,
-      "storeId": 2,
-      "productId": 1,
-      "quantity": 14,
-      "safetyStock": 12
+      "name": "홍두깨",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
     },
     {
       "id": 8,
-      "storeId": 2,
-      "productId": 2,
-      "quantity": 9,
-      "safetyStock": 14
+      "name": "짝갈비",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
     },
     {
       "id": 9,
-      "storeId": 2,
-      "productId": 4,
-      "quantity": 5,
-      "safetyStock": 9
+      "name": "사태",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
     },
     {
       "id": 10,
-      "storeId": 2,
-      "productId": 6,
-      "quantity": 6,
-      "safetyStock": 10
+      "name": "아롱/상박",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 11,
+      "name": "제비추리",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 12,
+      "name": "알목심",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 13,
+      "name": "스지",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 14,
+      "name": "도가니",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 15,
+      "name": "사골",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 16,
+      "name": "우족",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 17,
+      "name": "잡뼈",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 18,
+      "name": "꼬리",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 19,
+      "name": "토시",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 20,
+      "name": "LA갈비",
+      "category": "한우",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 21,
+      "name": "삼겹(으뜸)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 22,
+      "name": "목심(도드람)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 23,
+      "name": "오겹(으뜸)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 24,
+      "name": "갈비(도드람)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 25,
+      "name": "전지(도드람)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 26,
+      "name": "안심(도드람)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 27,
+      "name": "등갈비(도드람)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 28,
+      "name": "항정(도드람)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 29,
+      "name": "가브리(도드람)",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 30,
+      "name": "꺼먹돼지",
+      "category": "돈육",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 31,
+      "name": "유정란",
+      "category": "기타",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 32,
+      "name": "곰탕",
+      "category": "기타",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 33,
+      "name": "트레이8호",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 34,
+      "name": "트레이18호",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 35,
+      "name": "트레이27호",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 36,
+      "name": "트레이77호",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 37,
+      "name": "트레이100호",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 38,
+      "name": "돈가스",
+      "category": "기타",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 39,
+      "name": "불고기양념",
+      "category": "양념",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 40,
+      "name": "갈비양념",
+      "category": "양념",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 41,
+      "name": "떡갈비",
+      "category": "기타",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 42,
+      "name": "맛소스",
+      "category": "양념",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 43,
+      "name": "우촌리봉투 大",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 44,
+      "name": "우촌리봉투 小",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 45,
+      "name": "무항스티커",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
+    },
+    {
+      "id": 46,
+      "name": "지방봉투",
+      "category": "소모품",
+      "unit": "개",
+      "price": 0
     }
   ],
+  "inventory": [],
   "orders": [
     {
-      "id": 1,
+      "id": 1783401696249,
       "storeId": 1,
       "userId": 1,
-      "status": "approved",
-      "createdAt": "2026-06-01 09:20",
-      "memo": "오전 입고 요청",
+      "status": "pending",
+      "createdAt": "2026. 7. 7. PM 2:21:36",
+      "memo": "",
       "details": [
         {
-          "productId": 1,
-          "quantity": 3
+          "productId": 34,
+          "quantity": 3,
+          "status": "approved"
         },
         {
-          "productId": 4,
-          "quantity": 1
-        },
-        {
-          "productId": 3,
-          "quantity": 2
+          "productId": 35,
+          "quantity": 3,
+          "status": "rejected"
         }
       ]
     },
     {
-      "id": 2,
+      "id": 1783398280313,
       "storeId": 1,
       "userId": 1,
-      "status": "pending",
-      "createdAt": "2026-06-02 13:05",
-      "memo": "컵 재고 부족",
+      "status": "approved",
+      "createdAt": "2026. 7. 7. PM 1:24:40",
+      "memo": "",
       "details": [
+        {
+          "productId": 13,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "id": 1783398256497,
+      "storeId": 1,
+      "userId": 1,
+      "status": "approved",
+      "createdAt": "2026. 7. 7. PM 1:24:16",
+      "memo": "",
+      "details": [
+        {
+          "productId": 1,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "id": 1783396300611,
+      "storeId": 1,
+      "userId": 1,
+      "status": "approved",
+      "createdAt": "2026. 7. 7. PM 12:51:40",
+      "memo": "",
+      "details": [
+        {
+          "productId": 1,
+          "quantity": 1
+        },
+        {
+          "productId": 2,
+          "quantity": 1
+        },
         {
           "productId": 4,
           "quantity": 2
+        },
+        {
+          "productId": 5,
+          "quantity": 1
+        },
+        {
+          "productId": 8,
+          "quantity": 5
+        },
+        {
+          "productId": 9,
+          "quantity": 1
+        },
+        {
+          "productId": 12,
+          "quantity": 1
         }
       ]
+    },
+    {
+      "id": 1783395031010,
+      "storeId": 1,
+      "userId": 1,
+      "status": "approved",
+      "createdAt": "2026. 7. 7. PM 12:30:31",
+      "memo": "",
+      "details": [
+        {
+          "productId": 34,
+          "quantity": 2
+        }
+      ]
+    }
+  ],
+  "settlements": [
+    {
+      "id": 1783399895579,
+      "storeId": 1,
+      "month": "2026-07",
+      "paidAmount": 5000,
+      "memo": "다음달 이월"
     }
   ]
 }

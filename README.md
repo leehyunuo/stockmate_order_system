@@ -1,54 +1,49 @@
 # StockMate Order System
 
-소상공인 매장 발주·재고 관리 서비스 MVP입니다.
+StockMate 기반 발주/재고 관리 시스템 작업용 복사본입니다.
 
-## 실행 방법
+## 구성
+
+- `server.js`: Express API 서버와 정적 파일 서빙
+- `public/index.html`: 화면 구조
+- `public/app.js`: 로그인, 발주, 재고, 승인, 통계 화면 로직
+- `public/style.css`: UI 스타일
+- `data/db.json`: 샘플 사용자, 매장, 상품, 재고, 발주 데이터
+- `package.json`, `package-lock.json`: Node.js 의존성 정보
+- `StockMate_이현우.pptx`, `StockMate_이현우.mp4`: 기존 발표/시연 자료
+
+## 실행
+
+의존성 설치 후 서버를 실행합니다.
 
 ```bash
 npm install
-npm run dev
+npm start
 ```
 
-기본 주소:
-
-```text
-http://localhost:3000
-```
-
-3000번 포트가 이미 사용 중이면:
-
-```bash
-PORT=3001 npm run dev
-```
+기본 주소는 `http://localhost:3000` 입니다.
 
 ## 샘플 계정
 
-| 권한 | 계정 | 비밀번호 |
+| 역할 | 계정 | 비밀번호 |
 | --- | --- | --- |
 | 매장 | 성수 매장 | 1234 |
-| 본사 | 본사 관리자 | 1234 |
+| 관리자 | 본사 관리자 | 1234 |
 
-## 구현 기능
+## 주요 기능
 
-- 로그인 및 권한 구분
-- 운영 대시보드
-- 발주 신청
-- 발주 승인 / 반려
-- 재고 수량 / 안전 재고 수정
-- 부족 재고 표시
-- 매장별 발주 통계
-- CSV 다운로드
-- 매장 전용 화면 / 관리자 전용 화면 분리
-- 발주 수량 `-5`, `-1`, `+1`, `+5` 조절
-- 수량 조절 시 카드 애니메이션
+- 매장/관리자 역할별 로그인
+- 매장 발주 신청
+- 관리자 발주 승인/반려
+- 발주 승인 시 재고 자동 증가
+- 매장별 재고 및 안전 재고 관리
+- 관리자 통계 화면
+- 발주 CSV 다운로드
 
-## 현재 저장 방식
+## 원본 위치
 
-현재는 `data/db.json` 파일에 데이터를 저장합니다.
-실서비스 단계에서는 PostgreSQL 같은 데이터베이스로 교체하는 것이 좋습니다.
+이 작업 폴더는 아래 원본 프로젝트에서 `node_modules`와 `.git`을 제외하고 복사했습니다.
 
-## 배포 메모
-
-- Express 서버 기반이므로 Railway 또는 Render 배포에 적합합니다.
-- 실행 명령어는 `npm start`입니다.
-- 서버는 `process.env.PORT`를 사용하므로 Railway/Render의 자동 포트 할당을 지원합니다.
+```text
+/Users/ihyeon-u/web_programming/web_code/stockmate_order_system
+```
